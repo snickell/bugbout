@@ -14,10 +14,10 @@ FPS = 60
 
 # GameBoy-inspired color palette with better contrast
 GB_COLORS = [
-    (155, 188, 15),  # Light green (background)
-    (139, 172, 15),  # Medium green (branches)
-    (48, 98, 48),    # Dark green (locations)
-    (15, 56, 15)     # Darkest green (player, text)
+    (205, 222, 135),  # Lighter green (background)
+    (139, 172, 15),   # Medium green (branches)
+    (48, 98, 48),     # Dark green (locations)
+    (15, 56, 15)      # Darkest green (player, text)
 ]
 
 # Additional colors for better visibility
@@ -167,6 +167,10 @@ class Player:
         self.move_cooldown = 0
         self.flash_timer = 0  # For movement feedback
         
+        # Load character sprites directly
+        self.overworld_sprite = pygame.image.load('character-sprite-16px.png')
+        self.combat_sprite = pygame.image.load('character-sprite-32px.png')
+        
     def set_branch(self, branch, node_index=0):
         self.current_branch = branch
         self.node_index = node_index
@@ -265,34 +269,22 @@ class Player:
             self.selected_location = None
             
     def draw(self, surface):
-        # Draw player as an 8x8 virtual pixel character sprite
-        player_rect = pygame.Rect(self.x - 4, self.y - 4, 8, 8)
+        # Draw player as a 16x16 virtual pixel character sprite
+        player_rect = pygame.Rect(self.x - 8, self.y - 8, 16, 16)
         
         # Use flash effect when moving
         if self.flash_timer > 0:
+            # Flash effect - draw a white rectangle
             pygame.draw.rect(surface, WHITE, player_rect)
         else:
-            pygame.draw.rect(surface, GB_COLORS[3], player_rect)
-        
-        # Draw a border around the player
-        pygame.draw.rect(surface, WHITE, player_rect, 1)
-        
-        # Draw eyes (simple pixel art face)
-        eye_color = GB_COLORS[3] if self.flash_timer > 0 else WHITE
-        pygame.draw.rect(surface, eye_color, 
-                        (self.x - 2, self.y - 2, 1, 1))
-        pygame.draw.rect(surface, eye_color, 
-                        (self.x + 1, self.y - 2, 1, 1))
-        
-        # Draw mouth
-        pygame.draw.rect(surface, eye_color, 
-                        (self.x - 1, self.y + 1, 2, 1))
+            # Draw the sprite
+            surface.blit(self.overworld_sprite, (self.x - 8, self.y - 8))
         
         # If at a location that's not completed, draw exclamation mark above character
         if self.selected_location and not self.selected_location.completed:
-            # Draw exclamation mark (!)
-            pygame.draw.rect(surface, WHITE, (self.x - 1, self.y - 10, 2, 4))  # Vertical line
-            pygame.draw.rect(surface, WHITE, (self.x - 1, self.y - 5, 2, 2))   # Dot
+            # Draw exclamation mark (!) - positioned above the larger sprite
+            pygame.draw.rect(surface, WHITE, (self.x - 1, self.y - 14, 2, 4))  # Vertical line
+            pygame.draw.rect(surface, WHITE, (self.x - 1, self.y - 9, 2, 2))   # Dot
             
             # Highlight selected location
             self.selected_location.draw(surface, True)
@@ -301,17 +293,11 @@ class Player:
             self.selected_location.draw(surface, True)
             
     def draw_combat(self, surface, x, y):
-        # Draw player as a 16x16 virtual pixel character sprite for combat mode
-        player_rect = pygame.Rect(x - 8, y - 8, 16, 16)
-        pygame.draw.rect(surface, GB_COLORS[3], player_rect)
-        pygame.draw.rect(surface, WHITE, player_rect, 1)
+        # Draw player as a 32x32 virtual pixel character sprite for combat mode
+        player_rect = pygame.Rect(x - 16, y - 16, 32, 32)
         
-        # Draw eyes (simple pixel art face) - larger for combat
-        pygame.draw.rect(surface, WHITE, (x - 4, y - 4, 2, 2))
-        pygame.draw.rect(surface, WHITE, (x + 2, y - 4, 2, 2))
-        
-        # Draw mouth - larger for combat
-        pygame.draw.rect(surface, WHITE, (x - 3, y + 2, 6, 2))
+        # Draw the sprite
+        surface.blit(self.combat_sprite, (x - 16, y - 16))
 
 class Game:
     def __init__(self):
